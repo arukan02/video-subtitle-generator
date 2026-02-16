@@ -1,0 +1,33 @@
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Video files (don't upload large videos)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Audio files
+*.wav
+*.mp3
+
+# Temporary files
+temp_audio.wav
+translations.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
