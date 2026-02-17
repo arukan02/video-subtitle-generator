@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Video Call + Transcription — Full Stack Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent1: #00e5ff;
+    --accent2: #b47fff;
+    --accent3: #ff6b6b;
+    --accent4: #43e97b;
+    --accent5: #f9a825;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BG ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 60px 24px 100px; }
+
+  /* ── HEADER ── */
+  header { text-align: center; margin-bottom: 80px; }
+  .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent1);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── ARCHITECTURE DIAGRAM ── */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-diagram::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .arch-row {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 16px;
+    justify-content: center;
+  }
+  .arch-row:last-child { margin-bottom: 0; }
+  .arch-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    flex: 1;
+    max-width: 180px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .arch-box:hover { border-color: var(--accent1); transform: translateY(-2px); }
+  .arch-box.accent-cyan { border-color: rgba(0,229,255,0.4); }
+  .arch-box.accent-purple { border-color: rgba(180,127,255,0.4); }
+  .arch-box.accent-green { border-color: rgba(67,233,123,0.4); }
+  .arch-box.accent-orange { border-color: rgba(249,168,37,0.4); }
+  .arch-box.accent-red { border-color: rgba(255,107,107,0.4); }
+  .arch-box .icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .arch-box .name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+  .arch-box .tech { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+  .arch-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 1.4rem;
+    margin: -4px 0;
+    flex-shrink: 0;
+  }
+  .arch-separator {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+  .arch-separator::before, .arch-separator::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* ── TECH STACK GRID ── */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 60px;
+  }
+  .stack-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .stack-card:hover { transform: translateY(-3px); }
+  .stack-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stack-card.cyan::before { background: var(--accent1); }
+  .stack-card.purple::before { background: var(--accent2); }
+  .stack-card.green::before { background: var(--accent4); }
+  .stack-card.orange::before { background: var(--accent5); }
+  .stack-card.red::before { background: var(--accent3); }
+  .stack-card.cyan:hover { border-color: rgba(0,229,255,0.4); }
+  .stack-card.purple:hover { border-color: rgba(180,127,255,0.4); }
+  .stack-card.green:hover { border-color: rgba(67,233,123,0.4); }
+  .stack-card.orange:hover { border-color: rgba(249,168,37,0.4); }
+  .stack-card.red:hover { border-color: rgba(255,107,107,0.4); }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .card-icon { font-size: 1.6rem; }
+  .card-title { font-size: 1.05rem; font-weight: 800; }
+  .card-role {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .card-body { font-size: 0.88rem; color: #a0a0c0; line-height: 1.65; }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 3px 3px 3px 0;
+    border: 1px solid;
+  }
+  .badge.cyan { color: var(--accent1); border-color: rgba(0,229,255,0.3); background: rgba(0,229,255,0.07); }
+  .badge.purple { color: var(--accent2); border-color: rgba(180,127,255,0.3); background: rgba(180,127,255,0.07); }
+  .badge.green { color: var(--accent4); border-color: rgba(67,233,123,0.3); background: rgba(67,233,123,0.07); }
+  .badge.orange { color: var(--accent5); border-color: rgba(249,168,37,0.3); background: rgba(249,168,37,0.07); }
+  .badge.red { color: var(--accent3); border-color: rgba(255,107,107,0.3); background: rgba(255,107,107,0.07); }
+
+  /* ── DATA FLOW ── */
+  .flow-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 60px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+  }
+  .flow-step .num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .flow-arrow { color: var(--muted); font-size: 1.1rem; }
+  .flow-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin: 16px 0 8px;
+    text-transform: uppercase;
+  }
+
+  /* ── PHASES ── */
+  .phases { margin-bottom: 60px; }
+  .phase {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .phase-header:hover { background: var(--surface2); }
+  .phase-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .phase-title { font-size: 1rem; font-weight: 800; flex: 1; }
+  .phase-time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .phase-toggle { color: var(--muted); font-size: 0.8rem; transition: transform 0.3s; }
+  .phase.open .phase-toggle { transform: rotate(180deg); }
+  .phase-body {
+    display: none;
+    padding: 0 24px 24px;
+    background: var(--surface);
+  }
+  .phase.open .phase-body { display: block; }
+  .task-list { list-style: none; margin-top: 16px; }
+  .task-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+    color: #a0a0c0;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-check {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .task-check:hover { border-color: var(--accent4); }
+  .task-check.done { background: var(--accent4); border-color: var(--accent4); color: #000; }
+  .task-list li.checked-item { color: var(--muted); }
+  .task-list li.checked-item .task-text { text-decoration: line-through; }
+  .task-subtopic {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── CONCEPT EXPLAINERS ── */
+  .explainers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 60px;
+  }
+  .explainer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .explainer .q { font-size: 0.82rem; font-weight: 700; margin-bottom: 8px; color: var(--accent1); }
+  .explainer .a { font-size: 0.83rem; color: #9090b8; line-height: 1.6; }
+
+  /* ── CODE SNIPPETS ── */
+  .snippet-grid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 60px;
+  }
+  .snippet { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .snippet-header {
+    padding: 12px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .snippet-dot { width: 8px; height: 8px; border-radius: 50%; }
+  pre {
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #c8c8e8;
+  }
+  .kw { color: var(--accent2); }
+  .fn { color: var(--accent1); }
+  .str { color: var(--accent4); }
+  .cm { color: var(--muted); font-style: italic; }
+  .num { color: var(--accent5); }
+
+  /* ── SUMMARY TABLE ── */
+  .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 60px; }
+  .summary-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-table td {
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid rgba(42,42,62,0.5);
+  }
+  .summary-table tr:hover td { background: var(--surface); }
+
+  /* ── ANIMATION ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .fadein { animation: fadeUp 0.6s ease forwards; }
+  .fadein-1 { animation-delay: 0.1s; opacity: 0; }
+  .fadein-2 { animation-delay: 0.2s; opacity: 0; }
+  .fadein-3 { animation-delay: 0.3s; opacity: 0; }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <header class="fadein fadein-1">
+    <span class="label">Full Stack Learning Roadmap</span>
+    <h1>Live Video Call<br>+ AI Transcription</h1>
+    <p>Your complete guide to building a Python-powered real-time video call app with live captions, translation, and speaker ID — from zero web knowledge to working product.</p>
+  </header>
+
+  <!-- ARCHITECTURE -->
+  <div class="section-title fadein fadein-2">System Architecture</div>
+  <div class="arch-diagram fadein fadein-2">
+    <div class="arch-row">
+      <div class="arch-box accent-cyan">
+        <div class="icon">🌐</div>
+        <div class="name">Browser (User A)</div>
+        <div class="tech">HTML + JS + WebRTC</div>
+      </div>
+      <div class="arch-box accent-cyan">
+        <div class="icon">🌐</div>
+        <div class="name">Browser (User B)</div>
+        <div class="tech">HTML + JS + WebRTC</div>
+      </div>
+      <div class="arch-box accent-cyan">
+        <div class="icon">📱</div>
+        <div class="name">Browser (User C–D)</div>
+        <div class="tech">HTML + JS + WebRTC</div>
+      </div>
+    </div>
+    <div class="arch-arrow">↕ WebSocket + WebRTC signaling ↕</div>
+    <div class="arch-row">
+      <div class="arch-box accent-purple" style="max-width:340px;">
+        <div class="icon">⚡</div>
+        <div class="name">FastAPI Backend (Python)</div>
+        <div class="tech">WebSocket Server · REST API · Signaling Hub</div>
+      </div>
+    </div>
+    <div class="arch-separator">internal services</div>
+    <div class="arch-row">
+      <div class="arch-box accent-green">
+        <div class="icon">🎙️</div>
+        <div class="name">Whisper ASR</div>
+        <div class="tech">openai-whisper (local)</div>
+      </div>
+      <div class="arch-box accent-green">
+        <div class="icon">🌏</div>
+        <div class="name">Translation</div>
+        <div class="tech">deep-translator / DeepL</div>
+      </div>
+      <div class="arch-box accent-green">
+        <div class="icon">🗣️</div>
+        <div class="name">Speaker ID</div>
+        <div class="tech">pyannote.audio</div>
+      </div>
+      <div class="arch-box accent-orange">
+        <div class="icon">💾</div>
+        <div class="name">SQLite / JSON</div>
+        <div class="tech">transcript storage</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECH STACK CARDS -->
+  <div class="section-title">The Tech Stack — What & Why</div>
+  <div class="stack-grid">
+
+    <div class="stack-card cyan">
+      <div class="card-header">
+        <div class="card-icon">⚡</div>
+        <div>
+          <div class="card-title">FastAPI</div>
+          <div class="card-role">Backend Framework · Python</div>
+        </div>
+      </div>
+      <div class="card-body">Your Python web server. Handles HTTP requests, WebSocket connections, and routes. It's like Flask but modern — built-in async support means it can handle many real-time connections at once. This is where all your Python logic lives.
+        <br><br>
+        <span class="badge cyan">pip install fastapi</span>
+        <span class="badge cyan">pip install uvicorn</span>
+      </div>
+    </div>
+
+    <div class="stack-card purple">
+      <div class="card-header">
+        <div class="card-icon">🔌</div>
+        <div>
+          <div class="card-title">WebSocket</div>
+          <div class="card-role">Real-Time Protocol · Built into FastAPI</div>
+        </div>
+      </div>
+      <div class="card-body">The "live pipe" between browser and server. Unlike normal HTTP (ask → wait → reply), WebSocket stays open so the server can <em>push</em> data instantly. Used for: sending transcripts to all users, relaying WebRTC signaling messages, broadcasting who is speaking.
+        <br><br>
+        <span class="badge purple">ws://localhost:8000/ws/room-id</span>
+      </div>
+    </div>
+
+    <div class="stack-card cyan">
+      <div class="card-header">
+        <div class="card-icon">📹</div>
+        <div>
+          <div class="card-title">WebRTC</div>
+          <div class="card-role">Video/Audio Protocol · Browser Native</div>
+        </div>
+      </div>
+      <div class="card-body">Browser tech that connects video/audio <em>directly</em> between users (peer-to-peer). Your server just helps them find each other (signaling), then steps aside. Each browser streams directly to the others — no video going through your Python server!
+        <br><br>
+        <span class="badge cyan">RTCPeerConnection</span>
+        <span class="badge cyan">MediaStream API</span>
+        <span class="badge cyan">ICE/STUN</span>
+      </div>
+    </div>
+
+    <div class="stack-card green">
+      <div class="card-header">
+        <div class="card-icon">🎙️</div>
+        <div>
+          <div class="card-title">Whisper</div>
+          <div class="card-role">Speech-to-Text · You already use this!</div>
+        </div>
+      </div>
+      <div class="card-body">OpenAI's speech recognition model — you already have it from your subtitle project! The difference here: instead of a full file, you feed it short audio <em>chunks</em> (every 3–5 seconds) streamed from the browser via WebSocket, then broadcast the text back live.
+        <br><br>
+        <span class="badge green">openai-whisper</span>
+        <span class="badge green">numpy + soundfile</span>
+      </div>
+    </div>
+
+    <div class="stack-card orange">
+      <div class="card-header">
+        <div class="card-icon">🗣️</div>
+        <div>
+          <div class="card-title">pyannote.audio</div>
+          <div class="card-role">Speaker Diarization · Who Said What</div>
+        </div>
+      </div>
+      <div class="card-body">Identifies which speaker is talking. Takes your audio chunk and returns time-stamped speaker labels like "SPEAKER_01 said X". Combined with WebRTC participant IDs, you can label "Alice: ..." vs "Bob: ..." in the transcript.
+        <br><br>
+        <span class="badge orange">pip install pyannote.audio</span>
+        <span class="badge orange">HuggingFace token needed</span>
+      </div>
+    </div>
+
+    <div class="stack-card purple">
+      <div class="card-header">
+        <div class="card-icon">🌏</div>
+        <div>
+          <div class="card-title">Translation</div>
+          <div class="card-role">Japanese / Korean · Same as your subtitle tool</div>
+        </div>
+      </div>
+      <div class="card-body">After Whisper transcribes a chunk, pass it to your translation function. You can reuse your existing code! For real-time use, run translation in a background async task so it doesn't block the transcription pipeline.
+        <br><br>
+        <span class="badge purple">deep-translator</span>
+        <span class="badge purple">DeepL API (better quality)</span>
+      </div>
+    </div>
+
+    <div class="stack-card red">
+      <div class="card-header">
+        <div class="card-icon">🌐</div>
+        <div>
+          <div class="card-title">HTML + Vanilla JS</div>
+          <div class="card-role">Frontend · Browser UI</div>
+        </div>
+      </div>
+      <div class="card-body">Just HTML, CSS, and plain JavaScript — no frameworks needed! The browser's built-in WebRTC and WebSocket APIs handle the hard parts. You'll learn: DOM manipulation, async/await in JS, event listeners, and media APIs. Great starting point before React.
+        <br><br>
+        <span class="badge red">no framework needed</span>
+        <span class="badge red">navigator.mediaDevices</span>
+      </div>
+    </div>
+
+    <div class="stack-card green">
+      <div class="card-header">
+        <div class="card-icon">💾</div>
+        <div>
+          <div class="card-title">SQLite + SQLAlchemy</div>
+          <div class="card-role">Database · Transcript Storage</div>
+        </div>
+      </div>
+      <div class="card-body">Stores full transcripts after a call ends. SQLite is a single-file database — no server to run. SQLAlchemy is the Python ORM (Object Relational Mapper) that lets you work with the database using Python classes instead of raw SQL.
+        <br><br>
+        <span class="badge green">pip install sqlalchemy</span>
+        <span class="badge green">no DB server needed</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DATA FLOW -->
+  <div class="section-title">How Data Flows — Audio to Caption</div>
+  <div class="flow-diagram">
+    <div class="flow-label">📹 Video path (peer-to-peer, bypasses server)</div>
+    <div class="flow-row">
+      <div class="flow-step"><span class="num" style="background:rgba(0,229,255,0.2);color:var(--accent1)">1</span> Your Mic/Camera</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(0,229,255,0.2);color:var(--accent1)">2</span> WebRTC Peer Connection</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(0,229,255,0.2);color:var(--accent1)">3</span> Other Browser directly</div>
+    </div>
+
+    <div class="flow-label">🎙️ Transcription path (via server)</div>
+    <div class="flow-row">
+      <div class="flow-step"><span class="num" style="background:rgba(67,233,123,0.2);color:var(--accent4)">1</span> Mic Audio (JS chunk every 3s)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(67,233,123,0.2);color:var(--accent4)">2</span> WebSocket → FastAPI</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(67,233,123,0.2);color:var(--accent4)">3</span> Whisper (Python)</div>
+    </div>
+    <div class="flow-row" style="margin-top: 4px; padding-left: 40px;">
+      <div class="flow-arrow" style="transform: rotate(90deg)">→</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step"><span class="num" style="background:rgba(180,127,255,0.2);color:var(--accent2)">4</span> pyannote Speaker ID</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(180,127,255,0.2);color:var(--accent2)">5</span> Translation (JP/KR)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(180,127,255,0.2);color:var(--accent2)">6</span> WebSocket broadcast to all</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(180,127,255,0.2);color:var(--accent2)">7</span> Live caption shown 🎉</div>
+    </div>
+
+    <div class="flow-label">💾 Storage path (on call end)</div>
+    <div class="flow-row">
+      <div class="flow-step"><span class="num" style="background:rgba(249,168,37,0.2);color:var(--accent5)">1</span> Call ends → event fires</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(249,168,37,0.2);color:var(--accent5)">2</span> Collect all transcript chunks</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(249,168,37,0.2);color:var(--accent5)">3</span> Save to SQLite (Python)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><span class="num" style="background:rgba(249,168,37,0.2);color:var(--accent5)">4</span> Download as .txt / .json</div>
+    </div>
+  </div>
+
+  <!-- BUILD PHASES -->
+  <div class="section-title">Build Phases — Click to Expand</div>
+  <div class="phases">
+
+    <div class="phase open" id="phase1">
+      <div class="phase-header" onclick="togglePhase('phase1')">
+        <div class="phase-num" style="background:rgba(0,229,255,0.15);color:var(--accent1)">01</div>
+        <div class="phase-title">Backend Basics — FastAPI + WebSocket</div>
+        <div class="phase-time">~1–2 days</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: HTTP vs WebSocket, async Python, routing, JSON APIs</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Install FastAPI + uvicorn, make a <code>GET /</code> route that returns JSON</div><div class="task-subtopic">Teaches: HTTP requests, routes, JSON responses</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add a WebSocket endpoint at <code>ws://localhost:8000/ws</code> that echoes messages back</div><div class="task-subtopic">Teaches: WebSocket handshake, send/receive, async loops</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Build a "room manager" — dict that tracks which WebSocket connections are in which room</div><div class="task-subtopic">Teaches: in-memory state, broadcasting to a group</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Test with two browser tabs — send a message from tab A, see it arrive in tab B</div><div class="task-subtopic">Teaches: real-time feel, debugging WebSockets</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add room creation endpoint: <code>POST /room</code> returns a unique room ID</div><div class="task-subtopic">Teaches: REST API design, UUID generation</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase" id="phase2">
+      <div class="phase-header" onclick="togglePhase('phase2')">
+        <div class="phase-num" style="background:rgba(255,107,107,0.15);color:var(--accent3)">02</div>
+        <div class="phase-title">Frontend Basics — HTML + JS + WebSocket</div>
+        <div class="phase-time">~1–2 days</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: DOM, events, JS async/await, browser WebSocket API</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Create <code>index.html</code> served by FastAPI with a text input and send button</div><div class="task-subtopic">Teaches: FastAPI serves static files, HTML forms</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Connect to your WebSocket from JS: <code>new WebSocket('ws://...')</code></div><div class="task-subtopic">Teaches: Browser WebSocket API, onmessage, onopen events</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Display incoming messages by creating DOM elements dynamically with JS</div><div class="task-subtopic">Teaches: document.createElement, appendChild, textContent</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Style the chat UI with CSS — flex layout, message bubbles, user colors</div><div class="task-subtopic">Teaches: CSS flexbox, variables, responsive sizing</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase" id="phase3">
+      <div class="phase-header" onclick="togglePhase('phase3')">
+        <div class="phase-num" style="background:rgba(180,127,255,0.15);color:var(--accent2)">03</div>
+        <div class="phase-title">WebRTC Video — The Hardest Part (But Manageable)</div>
+        <div class="phase-time">~3–5 days</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: WebRTC signaling dance, SDP offers/answers, ICE candidates</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Request camera/mic with <code>navigator.mediaDevices.getUserMedia()</code> and show local video</div><div class="task-subtopic">Teaches: Browser media APIs, &lt;video&gt; element, stream binding</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Implement the WebRTC "signaling dance" via your WebSocket: offer → answer → ICE candidates</div><div class="task-subtopic">Teaches: RTCPeerConnection, SDP (Session Description Protocol), signaling flow</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Display remote participant video streams in a grid layout</div><div class="task-subtopic">Teaches: ontrack event, multiple video elements, CSS grid</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add mute/camera toggle controls</div><div class="task-subtopic">Teaches: track.enabled property, UI state management</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Test with 2 tabs locally, then 2 different machines on same network</div><div class="task-subtopic">Teaches: STUN servers, NAT traversal concepts</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase" id="phase4">
+      <div class="phase-header" onclick="togglePhase('phase4')">
+        <div class="phase-num" style="background:rgba(67,233,123,0.15);color:var(--accent4)">04</div>
+        <div class="phase-title">Live Transcription — Stream Audio to Whisper</div>
+        <div class="phase-time">~2–3 days</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: binary WebSocket, audio chunks, async background tasks</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Use JS <code>MediaRecorder</code> to capture audio in 3-second chunks and send as binary over WebSocket</div><div class="task-subtopic">Teaches: MediaRecorder API, Blob, ArrayBuffer, binary WS frames</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">On FastAPI: receive binary audio, save to temp file, run Whisper, return text</div><div class="task-subtopic">Teaches: bytes handling in Python, tempfile, running your existing Whisper code</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Broadcast the transcript text to all room participants via WebSocket</div><div class="task-subtopic">Teaches: combining text and binary WebSocket message types</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Display rolling live captions overlay on the video UI</div><div class="task-subtopic">Teaches: CSS absolute positioning, caption animation, auto-scroll</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Run Whisper in a background thread so it doesn't block other WebSocket messages</div><div class="task-subtopic">Teaches: asyncio.run_in_executor, ThreadPoolExecutor, non-blocking async</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase" id="phase5">
+      <div class="phase-header" onclick="togglePhase('phase5')">
+        <div class="phase-num" style="background:rgba(249,168,37,0.15);color:var(--accent5)">05</div>
+        <div class="phase-title">Translation + Speaker ID</div>
+        <div class="phase-time">~2–3 days</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: async task chaining, model pipelines, structured data (JSON)</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">After Whisper returns text, pass it to your translation function (reuse your existing code!)</div><div class="task-subtopic">Teaches: async task chaining, reusing existing Python modules</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add language selector UI (English / Japanese / Korean) per user</div><div class="task-subtopic">Teaches: user preferences, WebSocket message with JSON payload</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Set up pyannote.audio for speaker diarization on each audio chunk</div><div class="task-subtopic">Teaches: HuggingFace pipeline, diarization output format</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Map speaker labels (SPEAKER_01) to participant names using room metadata</div><div class="task-subtopic">Teaches: Python dicts as a lookup table, data transformation</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Send structured JSON: <code>{"speaker":"Alice","text":"...","translation":"..."}</code></div><div class="task-subtopic">Teaches: JSON serialization, structured WebSocket messages</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="phase" id="phase6">
+      <div class="phase-header" onclick="togglePhase('phase6')">
+        <div class="phase-num" style="background:rgba(0,229,255,0.15);color:var(--accent1)">06</div>
+        <div class="phase-title">Transcript Storage + Download</div>
+        <div class="phase-time">~1 day</div>
+        <div class="phase-toggle">▼</div>
+      </div>
+      <div class="phase-body">
+        <div style="font-size:0.88rem;color:#8080a8;margin-top:4px;">You're learning: SQLAlchemy ORM, REST endpoints, file downloads</div>
+        <ul class="task-list">
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Define SQLAlchemy models: Room, TranscriptLine (speaker, text, translation, timestamp)</div><div class="task-subtopic">Teaches: ORM models, relationships, data types</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Save each transcribed chunk to the database as it arrives</div><div class="task-subtopic">Teaches: database sessions, async DB writes</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add <code>GET /transcript/{room_id}</code> endpoint that returns the full transcript as JSON</div><div class="task-subtopic">Teaches: REST GET endpoints, DB queries, response models</div></div></li>
+          <li><span class="task-check" onclick="toggleTask(this)"></span><div><div class="task-text">Add download button to UI that fetches transcript and triggers browser file download</div><div class="task-subtopic">Teaches: Blob download trick in JS, SRT/TXT formatting</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONCEPTS -->
+  <div class="section-title">Key Concepts to Understand</div>
+  <div class="explainers">
+    <div class="explainer">
+      <div class="q">🤔 What's the difference between HTTP and WebSocket?</div>
+      <div class="a">HTTP is like sending a letter: you ask, wait, get a reply, connection closes. WebSocket is like a phone call: stays open, either side can talk anytime. You need WebSocket for live captions.</div>
+    </div>
+    <div class="explainer">
+      <div class="q">🤔 What does "signaling" mean in WebRTC?</div>
+      <div class="a">Before two browsers can video-call, they need to negotiate: "I can do H.264, can you?" and "my IP is X, yours is Y". This negotiation goes through your server (signaling). Once done, video bypasses the server entirely.</div>
+    </div>
+    <div class="explainer">
+      <div class="q">🤔 Why use async in FastAPI?</div>
+      <div class="a">With sync Python, one slow Whisper task would block everyone else. Async lets FastAPI handle 100 WebSocket connections while Whisper runs — it just pauses one task while waiting and handles others.</div>
+    </div>
+    <div class="explainer">
+      <div class="q">🤔 What is an ORM?</div>
+      <div class="a">ORM (Object Relational Mapper) lets you write Python code instead of SQL. Instead of <code>INSERT INTO...</code>, you write <code>db.add(TranscriptLine(...))</code>. SQLAlchemy is the most popular Python ORM.</div>
+    </div>
+    <div class="explainer">
+      <div class="q">🤔 How does audio get from browser to Whisper?</div>
+      <div class="a">JS MediaRecorder captures your mic as binary audio blobs every 3 seconds. These are sent over WebSocket as binary data. FastAPI receives the bytes, saves them as a temp WAV file, then passes the path to Whisper.</div>
+    </div>
+    <div class="explainer">
+      <div class="q">🤔 What's a STUN server?</div>
+      <div class="a">Home routers use NAT — your "real" IP isn't visible to others. A STUN server tells your browser what its public IP looks like from the outside. Google provides free STUN: <code>stun:stun.l.google.com:19302</code>.</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="section-title">Complete Stack Summary</div>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Layer</th>
+        <th>Technology</th>
+        <th>Language</th>
+        <th>What It Does</th>
+        <th>You Know?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Backend</td><td>FastAPI</td><td>Python</td><td>HTTP & WebSocket server, routes, logic</td><td><span class="badge orange">Learn it</span></td></tr>
+      <tr><td>Backend</td><td>Uvicorn</td><td>Python</td><td>ASGI server that runs FastAPI</td><td><span class="badge orange">1 command</span></td></tr>
+      <tr><td>Realtime</td><td>WebSocket</td><td>Python + JS</td><td>Live bidirectional data channel</td><td><span class="badge orange">Learn it</span></td></tr>
+      <tr><td>Video</td><td>WebRTC</td><td>JS (browser)</td><td>Peer-to-peer video/audio streaming</td><td><span class="badge orange">Learn it</span></td></tr>
+      <tr><td>ASR</td><td>Whisper</td><td>Python</td><td>Speech-to-text on audio chunks</td><td><span class="badge green">✓ Have it</span></td></tr>
+      <tr><td>Translation</td><td>deep-translator</td><td>Python</td><td>JP/KR translation of transcript text</td><td><span class="badge green">✓ Have it</span></td></tr>
+      <tr><td>Speaker ID</td><td>pyannote.audio</td><td>Python</td><td>Who is speaking in each chunk</td><td><span class="badge orange">Learn it</span></td></tr>
+      <tr><td>Database</td><td>SQLite + SQLAlchemy</td><td>Python</td><td>Store transcripts, rooms</td><td><span class="badge orange">Learn it</span></td></tr>
+      <tr><td>Frontend</td><td>HTML + CSS + JS</td><td>JS / HTML</td><td>UI, video grid, caption display</td><td><span class="badge orange">Learn it</span></td></tr>
+    </tbody>
+  </table>
+
+  <!-- INSTALL SNIPPET -->
+  <div class="section-title">Getting Started — Install Everything</div>
+  <div class="snippet-grid">
+    <div class="snippet">
+      <div class="snippet-header">
+        <div class="snippet-dot" style="background:#ff6b6b"></div>
+        <div class="snippet-dot" style="background:#f9a825"></div>
+        <div class="snippet-dot" style="background:#43e97b"></div>
+        <span>terminal — install all dependencies</span>
+      </div>
+<pre><span class="cm"># Create a new project folder</span>
+mkdir video-call-app && cd video-call-app
+
+<span class="cm"># Backend</span>
+pip install fastapi uvicorn websockets python-multipart
+pip install openai-whisper
+pip install deep-translator
+pip install pyannote.audio
+pip install sqlalchemy aiosqlite
+
+<span class="cm"># Run the dev server</span>
+uvicorn main:app --reload --port 8000</pre>
+    </div>
+
+    <div class="snippet">
+      <div class="snippet-header">
+        <div class="snippet-dot" style="background:#ff6b6b"></div>
+        <div class="snippet-dot" style="background:#f9a825"></div>
+        <div class="snippet-dot" style="background:#43e97b"></div>
+        <span>main.py — FastAPI skeleton with WebSocket room</span>
+      </div>
+<pre><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI, WebSocket, WebSocketDisconnect
+<span class="kw">from</span> fastapi.staticfiles <span class="kw">import</span> StaticFiles
+<span class="kw">import</span> json, uuid
+
+app = <span class="fn">FastAPI</span>()
+app.<span class="fn">mount</span>(<span class="str">"/static"</span>, StaticFiles(directory=<span class="str">"static"</span>), name=<span class="str">"static"</span>)
+
+<span class="cm"># In-memory room registry: {room_id: [ws1, ws2, ...]}</span>
+rooms: dict[str, list] = {}
+
+<span class="kw">@app</span>.post(<span class="str">"/room"</span>)
+<span class="kw">async def</span> <span class="fn">create_room</span>():
+    room_id = str(uuid.<span class="fn">uuid4</span>())[:<span class="num">8</span>]
+    rooms[room_id] = []
+    <span class="kw">return</span> {<span class="str">"room_id"</span>: room_id}
+
+<span class="kw">@app</span>.websocket(<span class="str">"/ws/{room_id}"</span>)
+<span class="kw">async def</span> <span class="fn">websocket_endpoint</span>(ws: WebSocket, room_id: str):
+    <span class="kw">await</span> ws.<span class="fn">accept</span>()
+    rooms.<span class="fn">setdefault</span>(room_id, []).<span class="fn">append</span>(ws)
+    <span class="kw">try</span>:
+        <span class="kw">while True</span>:
+            data = <span class="kw">await</span> ws.<span class="fn">receive_text</span>()   <span class="cm"># signaling msgs</span>
+            <span class="kw">for</span> peer <span class="kw">in</span> rooms[room_id]:
+                <span class="kw">if</span> peer != ws:
+                    <span class="kw">await</span> peer.<span class="fn">send_text</span>(data)
+    <span class="kw">except</span> WebSocketDisconnect:
+        rooms[room_id].<span class="fn">remove</span>(ws)</pre>
+    </div>
+
+    <div class="snippet">
+      <div class="snippet-header">
+        <div class="snippet-dot" style="background:#ff6b6b"></div>
+        <div class="snippet-dot" style="background:#f9a825"></div>
+        <div class="snippet-dot" style="background:#43e97b"></div>
+        <span>transcribe.py — audio chunk → Whisper → text</span>
+      </div>
+<pre"><span class="kw">import</span> whisper, tempfile, os
+<span class="kw">from</span> concurrent.futures <span class="kw">import</span> ThreadPoolExecutor
+
+model = whisper.<span class="fn">load_model</span>(<span class="str">"base"</span>)   <span class="cm"># load once at startup</span>
+executor = <span class="fn">ThreadPoolExecutor</span>(max_workers=<span class="num">2</span>)
+
+<span class="kw">async def</span> <span class="fn">transcribe_chunk</span>(audio_bytes: bytes, loop) -> str:
+    <span class="cm"># Save to temp file (Whisper needs a file path)</span>
+    <span class="kw">with</span> tempfile.<span class="fn">NamedTemporaryFile</span>(suffix=<span class="str">".webm"</span>, delete=<span class="kw">False</span>) <span class="kw">as</span> f:
+        f.<span class="fn">write</span>(audio_bytes)
+        tmp_path = f.name
+
+    <span class="cm"># Run Whisper in thread so it doesn't block async</span>
+    <span class="kw">def</span> <span class="fn">_run</span>():
+        result = model.<span class="fn">transcribe</span>(tmp_path, fp16=<span class="kw">False</span>)
+        os.<span class="fn">unlink</span>(tmp_path)
+        <span class="kw">return</span> result[<span class="str">"text"</span>]
+
+    <span class="kw">return await</span> loop.<span class="fn">run_in_executor</span>(executor, _run)</pre>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:16px;">
+    <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Ready to start?</div>
+    <div style="font-size:1.2rem;font-weight:800;margin-bottom:8px;">Begin with Phase 01 — FastAPI + WebSocket</div>
+    <div style="font-size:0.88rem;color:#8080a8;">Get the server running first, add video second, transcription third.<br>Each phase teaches you real concepts you'll use for every web app you ever build.</div>
+  </div>
+
+</div>
+
+<script>
+  function togglePhase(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+  function toggleTask(el) {
+    el.classList.toggle('done');
+    el.innerHTML = el.classList.contains('done') ? '✓' : '';
+    el.closest('li').classList.toggle('checked-item');
+  }
+</script>
+</body>
+</html>
